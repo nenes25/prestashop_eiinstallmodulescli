@@ -19,41 +19,13 @@
  * needs please refer to http://www.prestashop.com for more information.
  *
  *  @author    Hennes Hervé <contact@h-hennes.fr>
- *  @copyright 2013-2014 Hennes Hervé
+ *  @copyright 2013-2015 Hennes Hervé
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  http://www.h-hennes.fr/blog/
  */
 
 require_once(dirname(__FILE__).'/../../config/config.inc.php');
+require_once(dirname(__FILE__).'/eiinstallmodulescli.php');
 
-/* Nom du module à installer */
-$module_name = Tools::getValue('module_name');
-/* Action à effectuer */
-$action = Tools::getValue('action', 'install');
-/* Actions disponibles pour le module */
-$actions_allowed = array('install', 'disable');
-
-
-if ($module_name)
-{
-
-	/* Inclusion de la classe du module */
-	if (!is_file(dirname(__FILE__).'/../'.$module_name.'/'.$module_name.'.php'))
-		die(' Erreur : Impossible d\'inclure le fichier du module');
-
-	include_once ( dirname(__FILE__).'/../'.$module_name.'/'.$module_name.'.php');
-
-	/* Installation du module */
-	try {
-		$module = new $module_name();
-		$module->$action();
-	} catch (PrestashopException $e) {
-		echo $e->getMessage();
-		exit();
-	}
-
-	echo 'Module installé avec succès';
-}
-else
-	echo 'Pas de paramètre de module à installer';
-?>
+//Lancemement des actions d'installation
+EiInstallModulesCli::process();
