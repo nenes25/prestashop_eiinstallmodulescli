@@ -19,7 +19,7 @@
 * needs please refer to http://www.prestashop.com for more information.
 *
 *  @author    Hennes Hervé <contact@h-hennes.fr>
-*  @copyright 2013-2014 Hennes Hervé
+*  @copyright 2013-2015 Hennes Hervé
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  http://www.h-hennes.fr/blog/
 */
@@ -32,7 +32,7 @@ class EiInstallModulesCli extends Module
 		$this->name = 'eiinstallmodulescli';
 		$this->tab = 'others';
 		$this->author = 'administration';
-		$this->version = '0.1.3';
+		$this->version = '0.1.4';
 		$this->need_instance = 0;
 
 		parent::__construct();
@@ -59,7 +59,7 @@ class EiInstallModulesCli extends Module
 	/**
 	 * Code exécuté dans la console
 	 * Le module n'a pas besoin d'être installé pour fonctionner
-	 * 
+         * @ToDO : Gestion des traductions
 	 */
 	public static function process(){
 	
@@ -68,6 +68,9 @@ class EiInstallModulesCli extends Module
 		
 		/* Caractère de fin de ligne */
 		$endOfLine = '<br />';
+                
+                /* Actions disponibles pour le module */
+		$actions_allowed = array('install', 'uninstall' ,'enable','disable');
 	
 		/* Nom du module à installer */
 		$module_name = Tools::getValue('module_name');
@@ -77,9 +80,6 @@ class EiInstallModulesCli extends Module
 		
 		/* Flag pour permettre d'installer le module via github */
 		$github = Tools::getValue('github',false);
-		
-		/* Actions disponibles pour le module */
-		$actions_allowed = array('install', 'disable' ,'reset','delete');
 		
 		//Gestion via la ligne de commande
 		if ( $argv ) {
@@ -99,6 +99,10 @@ class EiInstallModulesCli extends Module
 
 		if ($module_name)
 		{
+                        /** Si l'action demandéé n'est pas autorisée , on affiche un message d'erreur */
+                        if ( !in_array($action, $actions_allowed))
+                                exit('Erreur : action demandée non autorisée');
+                    
 			/** Si le module est disponible sur github **/
 			if ( $github ) {
 				echo "Tentative de récupération du module depuis github".$endOfLine;;
@@ -110,7 +114,7 @@ class EiInstallModulesCli extends Module
 			if ( $module = Module::getInstanceByName($module_name) ) {
 				/* Installation du module */
 				try {
-					$module->install();
+					$module->${action}();
 				} catch (PrestashopException $e) {
 					echo $e->getMessage();
 					exit();
