@@ -66,19 +66,19 @@ class EiInstallModulesCli extends Module
 		//Pour la ligne de commandes
 		global $argv;
 		
-		/* Caractère de fin de ligne */
+		// Caractère de fin de ligne
 		$endOfLine = '<br />';
                 
-                /* Actions disponibles pour le module */
+        // Actions disponibles pour le module
 		$actions_allowed = array('install', 'uninstall' ,'enable','disable');
 	
-		/* Nom du module à installer */
+		// Nom du module à installer
 		$module_name = Tools::getValue('module_name');
 		
-		/* Action à effectuer : Par défaut installation */
+		// Action à effectuer : Par défaut installation
 		$action = Tools::getValue('action', 'install');
 		
-		/* Flag pour permettre d'installer le module via github */
+		// Flag pour permettre d'installer le module via github
 		$github = Tools::getValue('github',false);
 		
 		//Gestion via la ligne de commande
@@ -94,33 +94,38 @@ class EiInstallModulesCli extends Module
 				}
 			}
 			
-			echo "Lancement de l'installation via la ligne de commande ".$endOfLine;
+			echo "Lancement via la ligne de commande ".$endOfLine;
 		}
 
 		if ($module_name)
 		{
-                        /** Si l'action demandéé n'est pas autorisée , on affiche un message d'erreur */
-                        if ( !in_array($action, $actions_allowed))
-                                exit('Erreur : action demandée non autorisée');
+			// Si l'action demandéé n'est pas autorisée , on affiche un message d'erreur
+			if ( !in_array($action, $actions_allowed))
+					exit('Erreur : action demandée non autorisée'.$endOfLine);
                     
-			/** Si le module est disponible sur github **/
+			//Si le module est disponible sur github
 			if ( $github ) {
-				echo "Tentative de récupération du module depuis github".$endOfLine;;
+				echo "Tentative de récupération du module depuis github".$endOfLine;
 				echo "Url du dépôt : ".$github.$endOfLine;
 				//@ToDO : Récupérer les messages d'erreur + vérifier que shell_exec est autorisé
 				shell_exec("git clone ".$github." "._PS_MODULE_DIR_.$module_name);
 			}
 
 			if ( $module = Module::getInstanceByName($module_name) ) {
-				/* Installation du module */
+			
+				// Pour les actions enable / disable : il faut s'assurer que le module est installé
+				if ( ($action == 'enable' || $action == 'disable') && !Module::isInstalled($module->name) )
+					exit ('Erreur : le module '.$module_name.' n\'est pas installé. Il ne peut pas être activé / désactivé '.$endOfLine);
+			
+				// Exécution de l'action du module
 				try {
-					$module->${action}();
+					$module->$action();
 				} catch (PrestashopException $e) {
 					echo $e->getMessage();
 					exit();
 				}
 
-				echo 'Module installé avec succès'.$endOfLine;;
+				echo 'Module '.$module_name.' action : '.$action.' effectuée avec succès'.$endOfLine;;
 			
 			}
 			else {
@@ -128,6 +133,6 @@ class EiInstallModulesCli extends Module
 			}
 		}
 		else
-			echo 'Pas de paramètre de module à installer'.$endOfLine;;
+			echo 'Pas de paramètre de module'.$endOfLine;;
 	}
 }
