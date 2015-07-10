@@ -26,19 +26,27 @@
 
 class EiInstallModulesCli extends Module
 {
+	/** Caractères de fin de ligne */
+	public static $endOfLine = '<br />';
+	
+	/** Actions Autorisées pour un module */
+	public static $modulesActionsAllowed = array('install', 'uninstall' ,'enable','disable');
+	
+	/** Actions autorisées pour une configuration */
+	public static $configurationActionsAllowed = array('update','delete');
 
 	public function __construct()
 	{
 		$this->name = 'eiinstallmodulescli';
 		$this->tab = 'others';
 		$this->author = 'administration';
-		$this->version = '0.1.4';
+		$this->version = '0.2.0';
 		$this->need_instance = 0;
 
 		parent::__construct();
 
 		$this->displayName = $this->l('Ei Install Modules Cli');
-		$this->description = $this->l('This module allow you to install others modules using the command line');
+		$this->description = $this->l('This module allow you to install others modules, or to update shop configuration using the command line');
 	}
 
 	public function install()
@@ -59,17 +67,33 @@ class EiInstallModulesCli extends Module
 	/**
 	 * Code exécuté dans la console
 	 * Le module n'a pas besoin d'être installé pour fonctionner
-         * @ToDO : Gestion des traductions
+     * @ToDO : Gestion des traductions + Refactoring
 	 */
 	public static function process(){
 	
 		//Pour la ligne de commandes
 		global $argv;
 		
-		// Caractère de fin de ligne
-		$endOfLine = '<br />';
-                
-        // Actions disponibles pour le module
+		$mode = Tools::getValue('mode','module');
+		
+		if ( $argv )
+			self::$endOfLine = "\n";
+        
+		if ( $mode == 'configuration' )
+			self::_processConfiguration();
+		else 
+			self::_processModule();
+        
+	}
+	
+	/**
+	 * Actions sur les modules
+	 */
+	protected static function _processModule() {
+		//Pour la ligne de commandes
+		global $argv;
+		
+		// Actions disponibles pour le module
 		$actions_allowed = array('install', 'uninstall' ,'enable','disable');
 	
 		// Nom du module à installer
@@ -94,45 +118,88 @@ class EiInstallModulesCli extends Module
 				}
 			}
 			
-			echo "Lancement via la ligne de commande ".$endOfLine;
+			echo "Lancement via la ligne de commande ".self::$endOfLine;
 		}
 
-		if ($module_name)
-		{
-			// Si l'action demandéé n'est pas autorisée , on affiche un message d'erreur
-			if ( !in_array($action, $actions_allowed))
-					exit('Erreur : action demandée non autorisée'.$endOfLine);
-                    
-			//Si le module est disponible sur github
-			if ( $github ) {
-				echo "Tentative de récupération du module depuis github".$endOfLine;
-				echo "Url du dépôt : ".$github.$endOfLine;
-				//@ToDO : Récupérer les messages d'erreur + vérifier que shell_exec est autorisé
-				shell_exec("git clone ".$github." "._PS_MODULE_DIR_.$module_name);
-			}
-
-			if ( $module = Module::getInstanceByName($module_name) ) {
-			
-				// Pour les actions enable / disable : il faut s'assurer que le module est installé
-				if ( ($action == 'enable' || $action == 'disable') && !Module::isInstalled($module->name) )
-					exit ('Erreur : le module '.$module_name.' n\'est pas installé. Il ne peut pas être activé / désactivé '.$endOfLine);
-			
-				// Exécution de l'action du module
-				try {
-					$module->$action();
-				} catch (PrestashopException $e) {
-					echo $e->getMessage();
-					exit();
-				}
-
-				echo 'Module '.$module_name.' action : '.$action.' effectuée avec succès'.$endOfLine;;
-			
-			}
-			else {
-				echo 'Erreur le module '.$module_name.' n\'existe pas'.$endOfLine;;
-			}
+		// Si l'action demandéé n'est pas autorisée , on affiche un message d'erreur
+		if ( !in_array($action, $actions_allowed))
+				exit('Erreur : action demandée non autorisée'.self::$endOfLine);
+				
+		//Si le module est disponible sur github
+		if ( $github ) {
+			echo "Tentative de récupération du module depuis github".self::$endOfLine;
+			echo "Url du dépôt : ".$github.$endOfLine;
+			//@ToDO : Récupérer les messages d'erreur + vérifier que shell_exec est autorisé
+			shell_exec("git clone ".$github." "._PS_MODULE_DIR_.$module_name);
 		}
-		else
-			echo 'Pas de paramètre de module'.$endOfLine;;
+
+		if ( $module = Module::getInstanceByName($module_name) ) {
+		
+			// Pour les actions enable / disable : il faut s'assurer que le module est installé
+			if ( ($action == 'enable' || $action == 'disable') && !Module::isInstalled($module->name) )
+				exit ('Erreur : le module '.$module_name.' n\'est pas installé. Il ne peut pas être activé / désactivé '.self::$endOfLine);
+		
+			// Exécution de l'action du module
+			try {
+				$module->$action();
+			} catch (PrestashopException $e) {
+				echo $e->getMessage();
+				exit();
+			}
+
+			echo 'Module '.$module_name.' action : '.$action.' effectuée avec succès'.self::$endOfLine;;
+		
+		}
+		else {
+			echo 'Erreur le module '.$module_name.' n\'existe pas'.self::$endOfLine;;
+		}
+		
 	}
+	
+	/**
+	 * Actions sur la configuration
+	 */
+	 protected static function _processConfiguration(){
+		 
+		//Pour la ligne de commandes
+		global $argv; 
+	
+		//Récupération des valeurs
+		$key = Tools::getValue('key');
+		$value = Tools::getValue('value');
+		$action_conf = Tools::getValue('action_conf','update');
+		
+		
+		//Gestion via la ligne de commande
+		if ( $argv ) {
+					
+			$allowsKeys = array('key','value','action_conf');
+
+			foreach ( $argv as $arg ) {
+				$arguments = explode('=',$arg);
+				if ( in_array($arguments[0],$allowsKeys) ) {
+					${$arguments[0]}= $arguments[1];
+				}
+			}
+			
+			echo "Lancement via la ligne de commande ".self::$endOfLine;
+		}
+		
+		
+		if ( !$key || !$value )
+			exit('Erreur Pas de clé ou de valeur définie pour la configuration'.self::$endOfLine);
+			
+		if ( !in_array($action_conf,self::$configurationActionsAllowed) )
+			exit('Erreur action non autorisée pour la configuration '.self::$endOfLine);
+			
+		if ( $action_conf == 'update' )	
+			Configuration::UpdateValue($key,$value);
+		else
+			Configuration::deleteByName($key);
+			
+		echo $action_conf.' effectuee pour la cle '.$key.' '.self::$endOfLine;	
+	 
+	 }
+	 
+	
 }

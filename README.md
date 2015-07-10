@@ -32,4 +32,23 @@ disable
 	php install_module.php module_name=productscategory  action=disable
 </pre>
 
+How to update Configuration ( CLI Mode )
+----
+
+You can also set Prestashop Configuration Values
+
+Example for Google Analytics
+
+Configure Analytics Key
+<pre>
+php install_module.php mode=configuration key=GA_ACCOUNT_ID value="MY-KEY"
+</pre>
+
+Delete Key
+<pre>
+php install_module.php mode=configuration key=GA_ACCOUNT_ID action_conf=delete
+</pre>
+ 
+
+
   
