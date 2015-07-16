@@ -1,6 +1,7 @@
 <?php
+
 /**
- * 2007-2014 PrestaShop
+ * 2007-2014 PrestaShop.
  *
  * NOTICE OF LICENSE
  *
@@ -23,9 +24,8 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  http://www.h-hennes.fr/blog/
  */
-
-require_once(dirname(__FILE__).'/../../config/config.inc.php');
-require_once(dirname(__FILE__).'/eiinstallmodulescli.php');
+require_once dirname(__FILE__).'/../../config/config.inc.php';
+require_once dirname(__FILE__).'/eiinstallmodulescli.php';
 
 //Lancemement des actions d'installation
-EiInstallModulesCli::process();
+eiinstallmodulescli::process();
