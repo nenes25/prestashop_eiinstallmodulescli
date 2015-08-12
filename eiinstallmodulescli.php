@@ -40,7 +40,7 @@ class eiinstallmodulescli extends Module
         $this->name = 'eiinstallmodulescli';
         $this->tab = 'others';
         $this->author = 'administration';
-        $this->version = '0.2.0';
+        $this->version = '0.2.1';
         $this->need_instance = 0;
 
         parent::__construct();
