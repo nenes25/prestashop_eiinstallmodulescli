@@ -30,17 +30,20 @@ class eiinstallmodulescli extends Module
     public static $endOfLine = '<br />';
 
     /** Actions Autorisées pour un module */
-    public static $modulesActionsAllowed = array('install', 'uninstall' ,'enable','disable');
+    public static $modulesActionsAllowed = array('install', 'uninstall' ,'enable','disable' ,'status');
 
     /** Actions autorisées pour une configuration */
-    public static $configurationActionsAllowed = array('update','delete');
+    public static $configurationActionsAllowed = array('update','delete','get');
+	
+	/** Flag pour mode verbeux ou non */
+	public static $verbose = true;
 
     public function __construct()
     {
         $this->name = 'eiinstallmodulescli';
         $this->tab = 'others';
         $this->author = 'administration';
-        $this->version = '0.2.1';
+        $this->version = '0.2.2';
         $this->need_instance = 0;
 
         parent::__construct();
@@ -80,7 +83,11 @@ class eiinstallmodulescli extends Module
         global $argv;
 
         $mode = Tools::getValue('mode', 'module');
-
+		$verbose = Tools::getValue('verbose',true);
+		
+		if ( $verbose == 0 )
+			self::$verbose = false;
+		
         if ($argv) {
             self::$endOfLine = "\n";
         }
@@ -99,10 +106,7 @@ class eiinstallmodulescli extends Module
     {
         //Pour la ligne de commandes
         global $argv;
-
-        // Actions disponibles pour le module
-        $actions_allowed = array('install', 'uninstall' ,'enable','disable');
-
+		
         // Nom du module à installer
         $module_name = Tools::getValue('module_name');
 
@@ -123,12 +127,13 @@ class eiinstallmodulescli extends Module
                     ${$arguments[0]} = $arguments[1];
                 }
             }
-
-            echo 'Lancement via la ligne de commande '.self::$endOfLine;
+			
+			if ( self::$verbose )
+				echo 'Lancement via la ligne de commande '.self::$endOfLine;
         }
 
         // Si l'action demandéé n'est pas autorisée , on affiche un message d'erreur
-        if (!in_array($action, $actions_allowed)) {
+        if (!in_array($action, self::$modulesActionsAllowed)) {
             exit('Erreur : action demandée non autorisée'.self::$endOfLine);
         }
 
@@ -146,6 +151,23 @@ class eiinstallmodulescli extends Module
             if (($action == 'enable' || $action == 'disable') && !Module::isInstalled($module->name)) {
                 exit('Erreur : le module '.$module_name.' n\'est pas installé. Il ne peut pas être activé / désactivé '.self::$endOfLine);
             }
+			
+			//Affichage du statut du module (Installé ou non )
+			if ( $action =='status' ) {
+				if ( Module::isInstalled($module->name) )
+				{
+					if ( self::$verbose )
+						echo 'Le module '.$module->name.' est bien installé'.self::$endOfLine;
+					else
+						echo 1;
+				} else {
+					if ( self::$verbose )
+						echo 'Le module '.$module->name.' n\'est pas installé'.self::$endOfLine;
+					else
+						echo 0;
+				}
+				exit();	
+			}
 
             // Exécution de l'action du module
             try {
@@ -154,8 +176,10 @@ class eiinstallmodulescli extends Module
                 echo $e->getMessage();
                 exit();
             }
-
-            echo 'Module '.$module_name.' action : '.$action.' effectuée avec succès'.self::$endOfLine;
+			
+			if ( self::$verbose )
+				echo 'Module '.$module_name.' action : '.$action.' effectuée avec succès'.self::$endOfLine;
+				
         } else {
             echo 'Erreur le module '.$module_name.' n\'existe pas'.self::$endOfLine;
         }
@@ -172,9 +196,9 @@ class eiinstallmodulescli extends Module
 
         //Récupération des valeurs
         $key = Tools::getValue('key');
-         $value = Tools::getValue('value');
-         $action_conf = Tools::getValue('action_conf', 'update');
-
+        $value = Tools::getValue('value');
+        $action_conf = Tools::getValue('action_conf', 'update');
+		
         //Gestion via la ligne de commande
         if ($argv) {
             $allowsKeys = array('key','value','action_conf');
@@ -185,12 +209,13 @@ class eiinstallmodulescli extends Module
                     ${$arguments[0]} = $arguments[1];
                 }
             }
-
-            echo 'Lancement via la ligne de commande '.self::$endOfLine;
+			
+			if ( self::$verbose )
+				echo 'Lancement via la ligne de commande '.self::$endOfLine;
         }
 
-         if (!$key || !$value) {
-             exit('Erreur Pas de clé ou de valeur définie pour la configuration'.self::$endOfLine);
+         if (!$key && !$value) {
+             exit('Erreur Pas de clé et de valeur définie pour la configuration'.self::$endOfLine);
          }
 
          if (!in_array($action_conf, self::$configurationActionsAllowed)) {
@@ -198,11 +223,20 @@ class eiinstallmodulescli extends Module
          }
 
          if ($action_conf == 'update') {
+			if ( !$value )
+				exit('Erreur Impossible de mettre à jour la configuration, pas de valeur défine');
              Configuration::UpdateValue($key, $value);
-         } else {
-             Configuration::deleteByName($key);
+         }
+		 elseif ( $action_conf == 'get'){
+			if ( self::$verbose )
+				echo 'Valeur de la configuration'.$key.' '.Configuration::get($key).self::$endOfLine;
+			else	
+				echo Configuration::get($key);
+		 }else {
+            Configuration::deleteByName($key);
          }
 
-         echo $action_conf.' effectuee pour la cle '.$key.' '.self::$endOfLine;
+		 if ( self::$verbose )
+			echo $action_conf.' effectuee pour la cle '.$key.' '.self::$endOfLine;
      }
 }

@@ -30,3 +30,5 @@
 2015-05-20 : Version 0.1.4 : Mise à jour des actions diponibles pour les modules ( install / uninstall / enable / disable )
 2015-07-10 : Version 0.2.0 : Gestion des configurations
 2015-07-15 : Version 0.2.1 : Normes PSR-2
+2015-08-12 : Version 0.2.2 : Nouvelles actions disponibles : Status d'un module ( installé / non installé ), récupération de la valeur d'une configuration
+							 Rajout d'un flag pour mode verbeux ou non ( permets d'afficher uniquement un minimum d'informations )
