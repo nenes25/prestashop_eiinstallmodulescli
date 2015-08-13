@@ -1,6 +1,9 @@
 # prestashop_eiinstallmodulescli
 Install prestashop module from the commande line or a navigator
 
+Branch symlink : Work in progress in order to have one module directory for multiple module installation
+
+
 How to use it ( CLI Mode )
 ----
 
