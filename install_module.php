@@ -24,7 +24,10 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  http://www.h-hennes.fr/blog/
  */
-require_once dirname(__FILE__).'/../../config/config.inc.php';
+//Gestion du chemin d'inclusion si le module est installé via un lien symbolique
+$basepath = dirname(dirname($_SERVER['SCRIPT_FILENAME'])).DIRECTORY_SEPARATOR;
+
+include_once  $basepath.'../config/config.inc.php';
 require_once dirname(__FILE__).'/eiinstallmodulescli.php';
 
 //Lancemement des actions d'installation
