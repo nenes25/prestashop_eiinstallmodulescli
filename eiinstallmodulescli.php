@@ -196,9 +196,9 @@ class eiinstallmodulescli extends Module
 
         //Récupération des valeurs
         $key = Tools::getValue('key');
-        $value = Tools::getValue('value');
+        $value = Tools::getValue('value',-1);
         $action_conf = Tools::getValue('action_conf', 'update');
-		
+				
         //Gestion via la ligne de commande
         if ($argv) {
             $allowsKeys = array('key','value','action_conf');
@@ -214,7 +214,7 @@ class eiinstallmodulescli extends Module
 				echo 'Lancement via la ligne de commande '.self::$endOfLine;
         }
 
-         if (!$key && !$value) {
+         if (!$key && $value == -1 ) {
              exit('Erreur Pas de clé et de valeur définie pour la configuration'.self::$endOfLine);
          }
 
@@ -223,7 +223,9 @@ class eiinstallmodulescli extends Module
          }
 
          if ($action_conf == 'update') {
-			if ( !$value )
+			echo 'On est bien dans update';
+			echo 'value '.$value;
+			if ( $value == -1 )
 				exit('Erreur Impossible de mettre à jour la configuration, pas de valeur défine');
              Configuration::UpdateValue($key, $value);
          }
