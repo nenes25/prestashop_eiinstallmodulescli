@@ -24,10 +24,30 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  http://www.h-hennes.fr/blog/
  */
-//Gestion du chemin d'inclusion si le module est installé via un lien symbolique ( mode url )
-$basepath = dirname(dirname($_SERVER['SCRIPT_FILENAME'])).DIRECTORY_SEPARATOR;
+//EN CLI on part du principe que c'est du dev selon la méthodologie des articles du blog
+if (php_sapi_name() === 'cli') {
 
-include_once  $basepath.'../config/config.inc.php';
+    $baseCliIncludePath = '/var/www/public/prestashop/';
+    $psVersionFlag = false;
+    //On récupére le paramètre ps_version depuis les arguments
+    foreach ( $argv as $arg){
+        if ( preg_match('#^ps_version=#',$arg)) {
+            $psVersionFlag = true;
+            $basepath = $baseCliIncludePath.str_replace('ps_version=','',$arg).'/';
+        }
+    }
+
+    if ( !$psVersionFlag ){
+        die("Erreur : Dans la version symlink du module , il faut preciser la version prestashop ciblee pour les actions \n via un parametre par ex : ps_version=prestashop_1-6-1-1 \n");
+    }
+
+}
+else {
+    //Gestion du chemin d'inclusion si le module est installé via un lien symbolique ( mode url )
+    $basepath = dirname(dirname($_SERVER['SCRIPT_FILENAME'])).'/../';
+}
+
+include_once  $basepath.'config/config.inc.php';
 require_once dirname(__FILE__).'/eiinstallmodulescli.php';
 
 //Lancemement des actions d'installation
