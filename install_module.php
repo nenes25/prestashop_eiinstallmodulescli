@@ -24,7 +24,7 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  http://www.h-hennes.fr/blog/
  */
-//Gestion du chemin d'inclusion si le module est installé via un lien symbolique
+//Gestion du chemin d'inclusion si le module est installé via un lien symbolique ( mode url )
 $basepath = dirname(dirname($_SERVER['SCRIPT_FILENAME'])).DIRECTORY_SEPARATOR;
 
 include_once  $basepath.'../config/config.inc.php';
