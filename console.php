@@ -1,6 +1,5 @@
 #!/usr/bin/env php
 <?php
-
 //Autoload Composer
 require_once 'vendor/autoload.php';
 
@@ -8,19 +7,36 @@ require_once 'vendor/autoload.php';
 require_once '/var/www/public/prestashop/prestashop_1-6-1-1/config/config.inc.php';
 
 use Hhennes\PrestashopConsole\PrestashopConsoleApplication;
+use Symfony\Component\Yaml\Yaml;
 
-$app = new PrestashopConsoleApplication('PrestashopConsole','0.1.0');
-//@ToDo : Faire un autoloader des commandes
-$app->addCommands(array(
-    //Modules
-    new Hhennes\PrestashopConsole\Command\Module\EnableCommand(),
-    new Hhennes\PrestashopConsole\Command\Module\DisableCommand(),
-    new Hhennes\PrestashopConsole\Command\Module\ListCommand(),
-    //Cache
-    new Hhennes\PrestashopConsole\Command\Cache\ClearCommand(),
-    /**
-     * Smarty: vider le cache / activer/desactiver / forcer la compilation
-     * Thèmes : purger css / js
-     */
-));
+//Chargement de la configuration depuis le fichier config.yml
+$configuration = Yaml::parse(file_get_contents('config.yml'));
+
+$app = new PrestashopConsoleApplication($configuration['application']['name'], $configuration['application']['version']);
+
+//Insertion des commandes personnalisées depuis le fichier de configuration
+$customCommands = array();
+foreach ($configuration['commands'] as $command) {
+    $customCommands[] = new $command();
+}
+$app->addCommands($customCommands);
+
+//Lancement de l'application
 $app->run();
+
+/*
+  Liste des commandes à implémenter
+  //Debug
+  //Disable Non prestashopModules
+  //Disable all overrides
+  //Smarty
+  //Template compilation
+  //Cache
+  //Caching Type
+  //ClearCacheConfig
+  //ClearCache
+  /**
+ * Smarty: vider le cache / activer/desactiver / forcer la compilation
+ * Thèmes : purger css / js
+ */
+
