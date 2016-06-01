@@ -1,6 +1,12 @@
 # prestashop_eiinstallmodulescli
 Install prestashop module from the commande line or a navigator
 
+=======
+This module is deprecated and will not be updated anymore
+In order to use CLI with prestashop you can use the module Prestashop Console :
+https://github.com/nenes25/prestashop_console
+=======
+
 How to use it ( CLI Mode )
 ----
 
@@ -10,9 +16,9 @@ Go into the directory of the module eiinstallmodulesi
 
 install
 <pre>
-	php install_module.php module_name=productscategory 
+	php install_module.php module_name=productscategory
 </pre>
-  or 
+  or
 <pre>
 	php install_module.php module_name=productscategory  action=install
 </pre>
@@ -58,7 +64,7 @@ Get Key
 <pre>
 php install_module.php mode=configuration key=GA_ACCOUNT_ID action_conf=get
 </pre>
- 
 
 
-  
+
+
